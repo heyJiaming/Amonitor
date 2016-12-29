@@ -134,7 +134,24 @@
             
             NSArray *arr5 = [arr3[1] componentsSeparatedByString:@","];
             
-            compandLeverStruct leverstr = {[arr4[0] floatValue], [arr4[1] floatValue],[arr5[0] floatValue],[arr5[1] floatValue]};
+            NSString *lev1 = arr4[0];
+            NSString *lev2 = arr4[1];
+            NSString *lev3 = arr5[0];
+            NSString *lev4 = arr5[1];
+            if([lev1 isEqualToString:@"-inf"]){
+            lev1 = @"-60";
+            }
+            if([lev2 isEqualToString:@"-inf"]){
+                lev2 = @"-60";
+            }
+            if([lev3 isEqualToString:@"-inf"]){
+                lev3 = @"-60";
+            }
+            if([lev4 isEqualToString:@"-inf"]){
+                lev4 = @"-60";
+            }
+            
+            compandLeverStruct leverstr = {[lev1 floatValue], [lev2 floatValue],[lev3 floatValue],[lev4 floatValue]};
             compandMode.lever = leverstr;
             // 当数据来的时候发出一个通知
              // NSLog(@"接受到的数据:%@",str);
@@ -157,11 +174,20 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:@"CompandSoftknee" object:nil];
         }
     }else if([arr[0] isEqualToString:@"register"]){
-        NSLog(@"接受到的数据:%@",str);
+        NSLog(@"register: 接受到的数据:%@",str);
         NSDictionary *dict = @{arr[1]:arr[2]};
         
         [self.arrayM addObject:dict];
-           // 接收到的数据通过block 传值
+        
+//      // 测试
+//        
+//
+//        for(int i = 0;i<50;i++){
+//            NSString *str = [NSString stringWithFormat:@"ks201612020666%d",i];
+//        NSDictionary *dict2 = @{str:@"192.168.1.89"};
+//            [self.arrayM addObject:dict2];
+//        }
+//           // 接收到的数据通过block 传值
         if(self.dataBlock){
             self.dataBlock(self.arrayM.copy);
         }

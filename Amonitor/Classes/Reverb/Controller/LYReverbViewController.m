@@ -417,20 +417,8 @@
 }
 
 
--(void)test{
-    //    modeViewController.modalPresentationStyle = UIModalPresentationPopover;
-    //    UIPopoverPresentationController *pover = modeViewController.popoverPresentationController;
-    //   // pover.popoverBackgroundViewClass =
-    //    modeViewController.preferredContentSize = CGSizeMake( 118, 66); // 大小
-    //    pover.permittedArrowDirections = UIPopoverArrowDirectionUp;   // 箭头指向
-    //    pover.sourceView = self.BGView;
-    //    pover.sourceRect = sender.frame;
-    //    pover.popoverLayoutMargins = UIEdgeInsetsMake(100 ,100, 100,100);
-    //      //UIImage *img = [UIImage imageNamed:@"dropdown box"];
-    //    pover.backgroundColor = [UIColor blueColor];
-    //    [self presentViewController:modeViewController animated:YES completion:nil];
-    // *argv	char *	"/Users/IOSLH/Library/Developer/CoreSimulator/Devices/B7542CC8-2195-4A7C-84BD-9EA1DAD14924/data/Containers/Bundle/Application/9BFC0762-E125-4084-8A19-E66DFF03D049/Amonitor.app/Amonitor"	0x00007fff5a3bfac8
-    // modeViewController.view.backgroundColor = [UIColor clearColor];
+-(void)dealloc{
+    // 移除所有的通知
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
-
 @end

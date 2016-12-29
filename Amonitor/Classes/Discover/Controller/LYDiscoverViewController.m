@@ -41,7 +41,7 @@
     LYImageVIew *pinkView =  [[LYImageVIew alloc]initWithFrame:CGRectMake(542, 129, 107.5, 91.5)];
     pinkView.userInteractionEnabled = YES;
     pinkView.tag = 2;
-    [pinkView image:[UIImage imageNamed:@"btn-pink-n"] title:nil color:nil];
+    [pinkView image:[UIImage imageNamed:@"btn-pink-n"] title:@"equalizer" color:[UIColor colorWithRed:254/255.0 green:180/255.0 blue:183/255.0 alpha:1]];
     [ctrView addSubview:pinkView];
     
     LYImageVIew *orangeView = [[LYImageVIew alloc]initWithFrame:CGRectMake(543, 228, 107.5, 91.5)];
@@ -95,14 +95,9 @@
     // Dispose of any resources that can be recreated.
 }
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+-(void)dealloc{
+    // 移除所有的通知
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
-*/
 
 @end

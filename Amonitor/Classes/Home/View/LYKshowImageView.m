@@ -63,12 +63,16 @@
 
 -(void)imageWithTitle:(NSString *)title  subTitle:(NSString *)subTitle changeTitle:(NSString *)idStr color:(UIColor *)color{
     self.titleLable.text = title;
+    if(subTitle.length){
     self.subtitle = [subTitle substringFromIndex:2];
+    }
     self.subtitleLable.text = self.subtitle;
     self.idStr = idStr;
     self.color = color;
     self.title = title;
-    self.subTitle = [subTitle substringFromIndex:2];
+    if(subTitle.length){
+      self.subTitle = [subTitle substringFromIndex:2];
+    }
 }
 
 -(void)setSelStatu:(BOOL)selStatu{

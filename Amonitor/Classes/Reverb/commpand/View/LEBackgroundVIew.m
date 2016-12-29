@@ -28,11 +28,11 @@
 @end
 @implementation LEBackgroundVIew
 // 计算最后一个点的函数 (得到的点是以 (0,0 ))
--(void)getFinalPoint:(CGPoint)point{
+-(void)getFinalPoint:(CGPoint)point coefficient:(float)coef {
     
     CGFloat x = point.x;
     CGFloat y = point.y;
-    self.finalPoint = CGPointMake(0, x+y);
+    self.finalPoint = CGPointMake(0, x*coef+y);
     NSString *finalpointStr = NSStringFromCGPoint(self.finalPoint);
     [self.arrM addObject:finalpointStr];
 }
@@ -111,7 +111,7 @@
                 // 清除掉原来的点 然后一直得到的是新点
                 [self.arrM removeLastObject];
             
-                [self getFinalPoint:CGPointFromString(pointStr)];
+                [self getFinalPoint:CGPointFromString(pointStr) coefficient:(float)602/712];
             }
             [self setNeedsDisplay];
         }];
@@ -153,7 +153,7 @@
                 
                                if(idx == self.arrM.count - 2){
                     [self.arrM removeLastObject];
-                    [self getFinalPoint:newPoint];
+                    [self getFinalPoint:newPoint coefficient:(float)602/712];
                 }
                 
                 //把最新的点坐标发出去
@@ -249,7 +249,7 @@
                     [array removeObject:array[i]];
                     [array removeObject:array.lastObject
                      ];
-                    [self getFinalPoint:CGPointFromString(array.lastObject)];
+                    [self getFinalPoint:CGPointFromString(array.lastObject) coefficient:(float)602/712];
                     //[array addObject:NSStringFromCGPoint([self getFinalPoint:CGPointFromString(array.lastObject)])];
                 }else{
                  [array removeObject:array[i]];
@@ -280,5 +280,9 @@
             roundaImage.centerY = 301 +30 +self.ganv*3;
         }
 
+}
+-(void)dealloc{
+    // 移除所有的通知
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 @end

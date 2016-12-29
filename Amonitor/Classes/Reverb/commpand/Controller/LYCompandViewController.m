@@ -49,8 +49,8 @@
     }
     self.pointArray = mutableArray.copy;
     NSLog(@"pointAray:%@",self.pointArray);
-    //[self getsendDataWithArray:self.pointArray];
-    
+    [self getsendDataWithArray:self.pointArray];
+    NSLog(@" 发送出去的数据:%@",[self getsendDataWithArray:self.pointArray]);
     //发数据给服务器端
       [[GCDSocketTools sharedInstance] sendDict:nil OrString:[NSString stringWithFormat:@"compand:points:%@",[self getsendDataWithArray:self.pointArray]] returnMsg:nil returnError:nil andTag:60];
     
@@ -396,7 +396,7 @@
     [[NSNotificationCenter defaultCenter] addObserverForName:@"CompandUpdata" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification * _Nonnull note) {
         
         //获取值去设置
-        if(-self.compandMode.lever.inputLeft >= 60){
+        if(-self.compandMode.lever.inputLeft >= 60 ){
             self.leftStr1 = - 60;
         }else if(-self.compandMode.lever.inputRight <= 0){
             self.leftStr1 = 0;
@@ -475,10 +475,11 @@
         // 解析这个点的坐标
         for (NSString  *pointStr in arrM) {
             CGPoint p = CGPointFromString(pointStr);
-            CGPoint p1 = CGPointMake((p.x+100)*3.55, -p.y*3.01 + 30);
+            CGPoint p1 = CGPointMake((p.x+100)*3.56, -p.y*3.01 + 30);
             NSString *ptr = NSStringFromCGPoint(p1);
             [arrM2 addObject:ptr];
         }
+        
         backgroundView.arrM = arrM2;
         [backgroundView setNeedsDisplay];
     }];
@@ -531,6 +532,11 @@
 
 
 
+}
+
+-(void)dealloc{
+    // 移除所有的通知
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 @end

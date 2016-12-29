@@ -23,6 +23,7 @@
 #import  "LYCompandViewController.h"
 #import  "LYUdpBroadcastTool.h"
 #import "XHScanToolController.h"
+#import "Amonitor-Swift.h"
 //创建上面6个颜色块的类
 #import "LYAllColorBlock.h"
 #import "LYAllKShowImageVIew.h"
@@ -80,6 +81,12 @@
         if([searchBar.text isEqualToString:[textStr substringFromIndex:2]] || [searchBar.text isEqualToString:[textStr substringFromIndex:textStr.length - 4]]){
             // 获取在第几组
             int sec = i/8+1;
+            if(sec > 6  ){
+                searchBar.text = nil;
+                searchBar.placeholder = @"目前暂无此编号";
+                [searchBar resignFirstResponder];
+                return;
+            }
             for (LYColorBlockView *view in self.allColorBlockView.subviews) {
                 if(view.tag == sec){
                     [self.allColorBlockView clickTap:view.gestureRecognizers.firstObject];
@@ -88,7 +95,7 @@
             //获取在第几行
             int row = (i+1) %8;
             if(row == 0){
-                row = sec*8;
+                row = 8;
             }
             for(LYKshowImageView *view in self.allKshowView.subviews){
                 if(view.tag == row){
@@ -265,17 +272,17 @@
     UIView *searchView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 50)];
     
     // 添加一个扫描 条形码的 模块
-    UIButton *scanBtn = [UIButton new];
-    self.scanBtn = scanBtn;
-    [scanBtn  setTitle:@"扫一扫" forState:UIControlStateNormal];
-    [scanBtn setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
-    [scanBtn addTarget:self action:@selector(clickScanBtn:) forControlEvents:UIControlEventTouchUpInside];
-    [searchView addSubview:scanBtn];
-    [scanBtn sizeToFit];
-    [scanBtn makeConstraints:^(MASConstraintMaker *make) {
-        make.right.equalTo(searchView.mas_right).mas_offset(-20);
-        make.top.equalTo(searchView).mas_offset(10);
-    }];
+//    UIButton *scanBtn = [UIButton new];
+//    self.scanBtn = scanBtn;
+//    [scanBtn  setTitle:@"扫一扫" forState:UIControlStateNormal];
+//    [scanBtn setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
+//    [scanBtn addTarget:self action:@selector(clickScanBtn:) forControlEvents:UIControlEventTouchUpInside];
+//    [searchView addSubview:scanBtn];
+//    [scanBtn sizeToFit];
+//    [scanBtn makeConstraints:^(MASConstraintMaker *make) {
+//        make.right.equalTo(searchView.mas_right).mas_offset(-20);
+//        make.top.equalTo(searchView).mas_offset(10);
+//    }];
     
  
     UISearchBar *searchBar = [[UISearchBar alloc]initWithFrame:CGRectMake(43, 12, 184, 28)];
@@ -366,7 +373,7 @@
 // 创建 6 个 控制器
 -(void)setupChildViewController
 {
-    for(int i=0;i<3;i++){
+    for(int i=0;i<4;i++){
         if(i== 0){
             LYDiscoverViewController *discoverVC = [LYDiscoverViewController new];
             [self addChildViewController:discoverVC];
@@ -376,6 +383,13 @@
         }else  if(i == 2){
             LYCompandViewController *compandController = [LYCompandViewController new];
             [self addChildViewController:compandController];
+        }else if(i == 3){
+        //新添加的控制器
+//            LYCompandViewController *compandController = [LYCompandViewController new];
+//            [self addChildViewController:compandController];
+            
+            LYEqualizerViewController *vc = [LYEqualizerViewController new];
+            [self addChildViewController:vc];
         }
     }
 }
@@ -400,11 +414,11 @@
         make.bottom.equalTo(self.tabbarView.mas_top);
     }];
     
-    
+    // 请求数据
+    NSString *idAdree = [LYGetIPAdress  getIPAddress:YES];
     
     if(index==1){
-        // 请求数据
-        NSString *idAdree = [LYGetIPAdress  getIPAddress:YES];
+        
      
         [[GCDSocketTools sharedInstance] sendDict:nil OrString:[NSString stringWithFormat:@"reverb:require:%@",idAdree] returnMsg:^(NSDictionary *dict, NSString *msg) {
             NSLog(@"%@",msg);
@@ -415,11 +429,14 @@
         
     }else if(index == 2){
     
-        [[GCDSocketTools sharedInstance] sendDict:nil OrString:[NSString stringWithFormat:@"compand:require:%@",[LYGetIPAdress getIPAddress:YES]] returnMsg:^(NSDictionary *dict, NSString *msg) {
+        [[GCDSocketTools sharedInstance] sendDict:nil OrString:[NSString stringWithFormat:@"compand:require:%@",idAdree] returnMsg:^(NSDictionary *dict, NSString *msg) {
             NSLog(@"%@",msg);
         } returnError:^(NSError *error) {
             NSLog(@"%@",error);
         } andTag:11];
+    }else if(index == 3){
+      //新添加的控制器请求数据
+    
     }
 }
 

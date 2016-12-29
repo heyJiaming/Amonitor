@@ -190,6 +190,9 @@
     return mutableArray.copy;
 }
 
-
+-(void)dealloc{
+    // 移除所有的通知
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
 
 @end

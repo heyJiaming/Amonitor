@@ -76,7 +76,7 @@
     }
 }
 -(NSArray *)getNewArrayWithArray:(NSArray *)arr{
-
+    
     NSMutableArray *mutableArray = [NSMutableArray arrayWithCapacity:10];
     NSMutableArray *array = arr.mutableCopy;
     while (array.count > 8) {

@@ -12,6 +12,7 @@
 @property (nonatomic,strong)UIButton *selectButton;
 @property (nonatomic,strong)UIButton *secondeButton;
 @property (nonatomic,strong)UIButton *compandButton;
+@property (nonatomic,strong)UIButton *equalizerButton;
 @end
 @implementation LYTabBarView
 -(UIButton *)secondeButton{
@@ -27,6 +28,13 @@
         _compandButton.tag = 2;
     }
     return _compandButton;
+}
+-(UIButton *)equalizerButton{
+    if(_equalizerButton == nil){
+        _equalizerButton = [self setupButtonWithIcon:@"btn-dynamic-n" heightIcon:@"btn-dynamic-h" title:@"eq"];
+        _equalizerButton.tag = 3;
+    }
+    return _equalizerButton;
 }
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -51,14 +59,20 @@
                 [self clickButton:self.compandButton];
                 [self setNeedsLayout];
             }
+            if([note.object intValue] == 2){
+                [self clickButton:self.equalizerButton];
+                [self setNeedsLayout];
+            }
+            
         }];
         
         // 切换到discover控制器
         [[NSNotificationCenter defaultCenter] addObserverForName:@"returnDiscover" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification * _Nonnull note) {
-           // 2 去掉界面上其他的两个元素
+           // 2 去掉界面上其他的三个元素
             for (int i=0;i < self.subviews.count;i++ ) {
                 if(self.subviews.count>1){
                     [self.subviews[1] removeFromSuperview];
+                    i--;
                 }
             }
             //1.切换
@@ -66,6 +80,7 @@
          //3.至空
             self.secondeButton = nil;
             self.compandButton = nil;
+            self.equalizerButton = nil;
         }];
         
     }
@@ -122,6 +137,11 @@
         button.frame = CGRectMake(btnX, 0, button.frame.size.width, button.frame.size.height);
     }
 
+}
+
+-(void)dealloc{
+    // 移除所有的通知
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 @end
