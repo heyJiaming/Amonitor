@@ -13,19 +13,19 @@ import Accelerate
 
 class LYEqualizerViewController: UIViewController {
     
-    // 一些常数
+    // MARK: - 一些常数
     private let mainColor = UIColor(red: 254.0 / 255, green: 180.0 / 255, blue: 183.0 / 255, alpha: 1)
     private let offColor = UIColor(red: 239.0 / 255, green: 239.0 / 255, blue: 239.0 / 255, alpha: 1)
     private let pointNumber = 2048
     static let Fs: Float = 44100
     
-    // 频带信息
+    // MARK: - 频带信息
     private var bands: [BandInformation] = []
     
-    // 选中的频带（0~4）
+    // MARK: - 选中的频带（0~4）
     private var bandSelected: Int = 0
     
-    // 各个按钮及修饰
+    // MARK: - 各个按钮及修饰
     private var filterButtons: [UIButton] = []
     private var oldFilter: Int = 0
     private var bandSelectingButtons: [UIButton] = []
@@ -33,7 +33,7 @@ class LYEqualizerViewController: UIViewController {
     private var bandLineImages: [UIImage] = []
     private var bandPowerBuutons: [UIButton] = []
     
-    // Q值旋钮
+    // MARK: - Q值旋钮
     private var qRotatorImage: [UIImage] = []
     private var qRotatorOffImage: [UIImage] = []
     private var rotatorImageView: UIImageView!
@@ -41,16 +41,13 @@ class LYEqualizerViewController: UIViewController {
     private var qLabel: UILabel!
     private var initialQ: Float!
     
-    // 延迟绘画
-    private var isDrawing = false
-    
-    // 画频响曲线的view
+    // MARK: - 画频响曲线的view
     private var responseView: ResponseView!
     
-    // 计算频响曲线的类
+    // MARK: - 计算频响曲线的类
     private var ep_response: EP_Response!
     
-    // 频率滑动条
+    // MARK: - 频率滑动条
     private var freqTitleLabel: UILabel!
     private var freqValueLabel: UILabel!
     private var freqSliderBackground: UIImageView!
@@ -62,7 +59,7 @@ class LYEqualizerViewController: UIViewController {
     private var initialFreqMaskXMin: CGFloat!
     private var freqK: Float!
     
-    // 增益滑动条
+    // MARK: - 增益滑动条
     private var gainTitleLabel: UILabel!
     private var gainValueLabel: UILabel!
     private var gainSliderBackground: UIImageView!
