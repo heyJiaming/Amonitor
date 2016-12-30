@@ -17,6 +17,7 @@ class LYEqualizerViewController: UIViewController {
     private let mainColor = UIColor(red: 254.0 / 255, green: 180.0 / 255, blue: 183.0 / 255, alpha: 1)
     private let offColor = UIColor(red: 239.0 / 255, green: 239.0 / 255, blue: 239.0 / 255, alpha: 1)
     private let pointNumber = 2048
+    static let Fs: Float = 44100
     
     // 频带信息
     private var bands: [BandInformation] = []
@@ -419,12 +420,14 @@ class LYEqualizerViewController: UIViewController {
             initialFreqMaskXMin = freqMaskLayer.frame.minX
         } else if gr.state == .changed {
             freqHandlerMovingDistance = gr.translation(in: view).x + initialFreqHandlerXMin
-            if freqHandlerMovingDistance >= 730 / 2 && freqHandlerMovingDistance <= 1176 / 2 {
-                bands[bandSelected].freq = exp(Float((freqHandlerMovingDistance - 730 / 2)) / freqK + log(20))
-                updateFreqSlider()
-                drawBands(bandsToDraw: [bandSelected])
+            if freqHandlerMovingDistance < 730 / 2 {
+                freqHandlerMovingDistance = 730 / 2
+            } else if freqHandlerMovingDistance > 1176 / 2 {
+                freqHandlerMovingDistance = 1176 / 2
             }
-            
+            bands[bandSelected].freq = exp(Float((freqHandlerMovingDistance - 730 / 2)) / freqK + log(20))
+            updateFreqSlider()
+            drawBands(bandsToDraw: [bandSelected])
         }
     }
     
@@ -434,12 +437,15 @@ class LYEqualizerViewController: UIViewController {
             initialGainMaskXMin = gainMaskLayer.frame.minX
         } else if gr.state == .changed {
             gainHandlerMovingDistance = gr.translation(in: view).x + initialGainHandlerXMin
-            if gainHandlerMovingDistance >= 730 / 2 && gainHandlerMovingDistance <= 1176 / 2 {
-                bands[bandSelected].gain = Float((gainHandlerMovingDistance - 730 / 2)) / gainK - 20
-                updateGainSlider()
-                drawBands(bandsToDraw: [bandSelected])
+            if gainHandlerMovingDistance < 730 / 2 {
+                gainHandlerMovingDistance = 730 / 2
             }
-            
+            else if gainHandlerMovingDistance > 1176 / 2 {
+                gainHandlerMovingDistance = 1176 / 2
+            }
+            bands[bandSelected].gain = Float((gainHandlerMovingDistance - 730 / 2)) / gainK - 20
+            updateGainSlider()
+            drawBands(bandsToDraw: [bandSelected])
         }
     }
     
@@ -801,7 +807,7 @@ class LYEqualizerViewController: UIViewController {
             var b: [Float] = []
             var a: [Float] = []
             
-            let w0: Float = 2 * Float(M_PI) * self.freq / 44100
+            let w0: Float = 2 * Float(M_PI) * self.freq / LYEqualizerViewController.Fs
             let g_linear: Float = powf(10, self.gain / 40)
             let alpha = sin(w0)/(2 * self.qValue)
             
@@ -978,7 +984,8 @@ class LYEqualizerViewController: UIViewController {
             
             zeroArray = [Float].init(repeating: 0, count: fft_len)
             dftResult = [Float].init(repeating: 0, count: pointNumber)
-            let freqStride = stride(from: Float(0), to: Float(20000), by: Float(20000)/Float(pointNumber))
+            let halfFs = LYEqualizerViewController.Fs / 2
+            let freqStride = stride(from: Float(0), to: Float(halfFs), by: Float(halfFs)/Float(pointNumber))
             freqPoints = Array.init(freqStride)
             b_in = [Float].init(repeating: 0, count: fft_len)
             a_in = [Float].init(repeating: 0, count: fft_len)
