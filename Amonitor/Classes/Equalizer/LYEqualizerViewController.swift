@@ -6,6 +6,13 @@
 //  Copyright © 2016年 leye. All rights reserved.
 //
 
+/*
+ SWIFT_CLASS_NAMED("LYEqualizerViewController")
+ @interface LYEqualizerViewController : UIViewController
+ - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+ @end
+ */
+
 import UIKit
 import Accelerate
 
@@ -18,6 +25,11 @@ class LYEqualizerViewController: UIViewController {
     private let offColor = UIColor(red: 239.0 / 255, green: 239.0 / 255, blue: 239.0 / 255, alpha: 1)
     private let pointNumber = 2048
     static let Fs: Float = 44100
+    
+    // MARK: - 总开关
+    private var masterSwitch: UIButton!
+    private var eqIsOn: Bool = false
+    private var previousBandsOn: [Int] = []
     
     // MARK: - 频带信息
     private var bands: [BandInformation] = []
@@ -43,9 +55,10 @@ class LYEqualizerViewController: UIViewController {
     
     // MARK: - 画频响曲线的view
     private var responseView: ResponseView!
+    private var freqPoints: [Float] = []
     
     // MARK: - 计算频响曲线的类
-    private var ep_response: EP_Response!
+    private var eq_response: EQ_Response!
     
     // MARK: - 频率滑动条
     private var freqTitleLabel: UILabel!
@@ -71,8 +84,13 @@ class LYEqualizerViewController: UIViewController {
     private var initialGainMaskXMin: CGFloat!
     private var gainK: Float!
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        setEQ_response()
+        
+        setResponseView()
         
         setDefaultBands()
         
@@ -82,15 +100,13 @@ class LYEqualizerViewController: UIViewController {
         
         setQRotator()
         
-        setEP_Response()
-        
-        setResponseView()
-        
         setBandButtons()
         
         setFreqSlider()
         
         setGainSlider()
+        
+        setMasterSwitch()
     }
     
     override func awakeFromNib() {
@@ -252,11 +268,14 @@ class LYEqualizerViewController: UIViewController {
     
     private func setResponseView() {
         responseView = ResponseView(frame: CGRect(x: 38 / 2, y: 74 / 2 , width: 1536 / 2, height: 458 / 2), pointNumber: self.pointNumber)
+        let halfFs = LYEqualizerViewController.Fs / 2
+        let freqStride = stride(from: Float(0), to: Float(halfFs), by: Float(halfFs)/Float(pointNumber))
+        freqPoints = Array.init(freqStride)
         view.addSubview(responseView)
     }
     
-    private func setEP_Response() {
-        ep_response = EP_Response(pointNumber: self.pointNumber)
+    private func setEQ_response() {
+        EQ_Response.singleton = EQ_Response(pointNumber: self.pointNumber)
     }
     
     private func setFreqSlider() {
@@ -363,8 +382,16 @@ class LYEqualizerViewController: UIViewController {
         updateGainSlider()
     }
     
-    
-    
+    private func setMasterSwitch(){
+        let image = UIImage(named: "eq_OFF")
+        masterSwitch = UIButton()
+        masterSwitch.setImage(image, for: .normal)
+        masterSwitch.sizeToFit()
+        masterSwitch.addTarget(self, action: #selector(toggleMasterSwitch), for: .touchUpInside)
+        masterSwitch.frame = CGRect(origin: CGPoint(x: 1704 / 2, y: 750 / 2), size: masterSwitch.frame.size)
+        view.addSubview(masterSwitch)
+        turnOffMasterSwitch()
+    }
     
     // MARK: - 动作
     
@@ -388,9 +415,9 @@ class LYEqualizerViewController: UIViewController {
             let onImage = UIImage(named: "eq_图形\(newFilter + 1)_band\(band + 1)")
             filterButtons[bands[band].filterSelected].setImage(onImage, for: .normal)
             oldFilter = newFilter
-            drawBands(bandsToDraw: [bandSelected])
         }
         updateFilterControl()
+        updateResponseView()
     }
     
     // 启用或关闭某频带
@@ -408,7 +435,12 @@ class LYEqualizerViewController: UIViewController {
             let bandImage = UIImage(named: "eq_Band\(index + 1)_off")
             bandSelectingButtons[index].setImage(bandImage, for: .normal)
         }
-        selectFilter(filter: bands[index].filterSelected, forBand: index)
+        if index == bandSelected {
+            // 这个方法里会更新 resoponse view
+            selectFilter(filter: bands[index].filterSelected, forBand: index)
+            return
+        }
+        updateResponseView()
     }
     
     func dragFreqHandler(gr: UIPanGestureRecognizer){
@@ -424,7 +456,7 @@ class LYEqualizerViewController: UIViewController {
             }
             bands[bandSelected].freq = exp(Float((freqHandlerMovingDistance - 730 / 2)) / freqK + log(20))
             updateFreqSlider()
-            drawBands(bandsToDraw: [bandSelected])
+            updateResponseView()
         }
     }
     
@@ -442,7 +474,7 @@ class LYEqualizerViewController: UIViewController {
             }
             bands[bandSelected].gain = Float((gainHandlerMovingDistance - 730 / 2)) / gainK - 20
             updateGainSlider()
-            drawBands(bandsToDraw: [bandSelected])
+            updateResponseView()
         }
     }
     
@@ -471,9 +503,43 @@ class LYEqualizerViewController: UIViewController {
                 band.qValue = initialQ + Float(dy) * band.qUnit
                 qValueLabel.text = String.init(format: "%.2f", band.qValue)
                 updateRotator()
-                drawBands(bandsToDraw: [bandSelected])
+                updateResponseView()
             }
         }
+    }
+    
+    func toggleMasterSwitch() {
+        if eqIsOn {
+            turnOffMasterSwitch()
+        } else {
+            turnOnMasterSwitch()
+        }
+    }
+    
+    private func turnOffMasterSwitch() {
+        for i in 0 ..< bandPowerBuutons.count {
+            if bands[i].isOn {
+                previousBandsOn.append(i)
+                toggleBand(sender: bandPowerBuutons[i])
+            }
+            bandPowerBuutons[i].isEnabled = false
+        }
+        let image = UIImage(named: "eq_OFF")
+        masterSwitch.setImage(image, for: .normal)
+        eqIsOn = false
+    }
+    
+    private func turnOnMasterSwitch() {
+        for i in 0 ..< bandPowerBuutons.count {
+            if !bands[i].isOn && previousBandsOn.contains(i) {
+                toggleBand(sender: bandPowerBuutons[i])
+            }
+            bandPowerBuutons[i].isEnabled = true
+        }
+        let image = UIImage(named: "eq_ON")
+        masterSwitch.setImage(image, for: .normal)
+        previousBandsOn = []
+        eqIsOn = true
     }
     
     
@@ -638,275 +704,18 @@ class LYEqualizerViewController: UIViewController {
         }
     }
     
-    private func drawBands(bandsToDraw: [Int]) {
-        
-            for i in bandsToDraw {
-                let (b, a) = bands[i].returnBandA()
-                var fp: [Float] = []
-                var gp: [Float] = []
-                do {
-                    (fp, gp) = try ep_response.freqz(b: b, a: a)
-                } catch {
-                    
+    private func updateResponseView() {
+        var gp = Array<Float>.init(repeating: 0, count: pointNumber)
+        for band in bands {
+            if band.isOn {
+                for i in 0 ..< band.response.count {
+                    gp[i] += band.response[i]
                 }
-                responseView.drawResponseCurve(f: fp, gain: gp)
-            
+            }
         }
+        responseView.drawResponseCurve(f: freqPoints, gain: gp)
     }
     
-    // MARK: - 测试
-    private func testResponseView() {
-//        let w: [CGFloat] = [20.0, 40.0, 200.0, 400.0, 2000.0, 4000.0, 20000.0]
-//        let gain: [CGFloat] = [2, 4, 6, 8, 10, 12, 14]
-        
-//        let w: [CGFloat] = [200.0]
-//        let gain: [CGFloat] = [0]
-        
-        let f: [Float] = [20.0, 200, 2000.0, 20000.0]
-        let gain: [Float] = [5, 10, 15, 20]
-        responseView.drawResponseCurve(f: f, gain: gain)
-    }
-    
-    private func testDFT() {
-        
-        var numbersA: [Float] = []
-        var numbersB: [Float] = []
-        var result: [Float] = []
-
-
-        numbersA = [1.0, -3.5794348, 5.6586672, -4.9654152, 2.5294949, -0.70527411, 0.08375648]
-        numbersB = [0.28940692, -1.7364415, 4.3411038, -5.7881383, 4.3411038, -1.7364415, 0.28940692]
- 
-        print("\n64 results")
-        let ep_response = EP_Response(pointNumber: 64)
-        do {
-            result = try ep_response.freqz(b: numbersB, a: numbersA).1
-        } catch EP_Error.numbersOfTwoInputsNotEqual {
-            print("the length of two inputs are not the same")
-        } catch {
-            
-        }
-        for number in result {
-            print(number)
-        }
-        print()
-        
-        print("\n128 results")
-        let ep_response2 = EP_Response(pointNumber: 128)
-        do {
-            result = try ep_response2.freqz(b: numbersB, a: numbersA).1
-        } catch EP_Error.numbersOfTwoInputsNotEqual {
-            print("the length of two inputs are not the same")
-        } catch {
-            
-        }
-        for number in result {
-            print(number)
-        }
-        print()
-    }
-    
-    
-    // MARK: - 自定义内部类
-    // 频带信息
-    class BandInformation: NSObject {
-        // 是否开启了这个频带的滤波
-        var isOn: Bool = false
-        // 选择的滤波器（0~4）
-        var filterSelected: Int = 0
-        // 五个滤波器
-        var filters: [FilterInformation] = []
-        
-        var freq: Float {
-            set {
-                filters[filterSelected].freq = newValue
-            }
-            get {
-                return filters[filterSelected].freq
-            }
-        }
-        
-        var gain: Float {
-            set {
-                filters[filterSelected].gain = newValue
-            }
-            get {
-                if filterSelected == 0 || filterSelected == 4 {return 0}
-                return filters[filterSelected].gain
-            }
-        }
-        
-        var qValue: Float {
-            set {
-                filters[filterSelected].qValue = newValue
-            }
-            get {
-                return filters[filterSelected].qValue
-            }
-        }
-        
-        var qRange: (Float, Float) {
-            get {
-                switch filterSelected {
-                // high pass, low pass
-                case 0, 4: return (FilterInformation.lphp_q_min, FilterInformation.lphp_q_max)
-                // shelf
-                case 1, 3: return (FilterInformation.shelf_q_min, FilterInformation.shelf_q_max)
-                // peak
-                case 2: return(FilterInformation.peak_q_min, FilterInformation.peak_q_max)
-                default: return (FilterInformation.lphp_q_min, FilterInformation.lphp_q_max)
-                }
-            }
-        }
-        
-        var qUnit: Float {
-            get {
-                return (qRange.1 - qRange.0) / 80
-            }
-        }
-        
-        // 为便于调整旋钮图片，算出档位，作为图片下标
-        var qLevel: Int {
-            get {
-                let value = Int((qValue - qRange.0) / qUnit)
-                return value != 80 ? value : 79
-            }
-        }
-        
-        override init() {
-            var filter1 = FilterInformation()
-            filter1.filterType = .highPass
-            filter1.qValue = FilterInformation.lphp_q_min
-            filters.append(filter1)
-            
-            var filter2 = FilterInformation()
-            filter2.filterType = .lowShelf
-            filter2.qValue = FilterInformation.shelf_q_min
-            filters.append(filter2)
-            
-            var filter3 = FilterInformation()
-            filter3.filterType = .bell
-            filter3.qValue = FilterInformation.peak_q_min
-            filters.append(filter3)
-            
-            var filter4 = FilterInformation()
-            filter4.filterType = .highShelf
-            filter4.qValue = FilterInformation.shelf_q_min
-            filters.append(filter4)
-            
-            var filter5 = FilterInformation()
-            filter5.filterType = .lowPass
-            filter5.qValue = FilterInformation.lphp_q_min
-            filters.append(filter5)
-        }
-        
-        func returnBandA() -> ([Float], [Float]) {
-            var b: [Float] = []
-            var a: [Float] = []
-            
-            let w0: Float = 2 * Float(M_PI) * self.freq / LYEqualizerViewController.Fs
-            let g_linear: Float = powf(10, self.gain / 40)
-            let alpha = sin(w0)/(2 * self.qValue)
-            
-            switch self.filterSelected {
-            // highpass
-            case 0:
-                b.append((1 + cos(w0))/2)
-                b.append(-( 1 + cos(w0)))
-                b.append((1 + cos(w0))/2)
-                a.append(1 + alpha)
-                a.append(-2*cos(w0))
-                a.append(1 - alpha)
-            
-            // low shelf
-            case 1:
-                b.append(g_linear*((g_linear+1) - (g_linear-1)*cos(w0) + 2*sqrt(g_linear)*alpha))
-                b.append(2*g_linear*((g_linear-1) - (g_linear+1)*cos(w0)))
-                b.append(g_linear*((g_linear+1) - (g_linear-1)*cos(w0) - 2*sqrt(g_linear)*alpha))
-                a.append((g_linear+1) + (g_linear-1)*cos(w0) + 2*sqrt(g_linear)*alpha)
-                a.append(-2*((g_linear-1) + (g_linear+1)*cos(w0)))
-                a.append((g_linear+1) + (g_linear-1)*cos(w0) - 2*sqrt(g_linear)*alpha)
-                
-            // bell (peaking)
-            case 2:
-                b.append(1 + alpha*g_linear)
-                b.append(-2*cos(w0))
-                b.append(1 - alpha*g_linear)
-                a.append(1 + alpha/g_linear)
-                a.append(-2*cos(w0))
-                a.append(1 - alpha/g_linear)
-                
-            // high shelf
-            case 3:
-                b.append(g_linear*((g_linear+1) + (g_linear-1)*cos(w0) + 2*sqrt(g_linear)*alpha))
-                b.append(-2*g_linear*((g_linear-1) + (g_linear+1)*cos(w0)))
-                b.append(g_linear*((g_linear+1) + (g_linear-1)*cos(w0) - 2*sqrt(g_linear)*alpha))
-                a.append((g_linear+1) - (g_linear-1)*cos(w0) + 2*sqrt(g_linear)*alpha)
-                a.append(2*((g_linear-1) - (g_linear+1)*cos(w0)))
-                a.append( (g_linear+1) - (g_linear-1)*cos(w0) - 2*sqrt(g_linear)*alpha)
-                
-            // lowpass
-            case 4:
-                b.append((1 - cos(w0))/2)
-                b.append(1 - cos(w0))
-                b.append((1 - cos(w0))/2)
-                a.append(1 + alpha)
-                a.append(-2*cos(w0))
-                a.append(1 - alpha)
-            default:
-                break
-            }
-            
-            return (b, a)
-        }
-        
-        // 滤波器信息结构体
-        struct FilterInformation {
-            
-            // 一些常数
-            static let shelf_q_min: Float = 0.4
-            static let shelf_q_max: Float = 1.0
-            static let peak_q_min: Float = 0.5
-            static let peak_q_max: Float = 5.0
-            static let lphp_q_min: Float = 0.1
-            static let lphp_q_max: Float = 1.5
-            
-            var filterType: FilterType = .highPass
-            var freq: Float = 20.0 {
-                didSet {
-                    if freq < 20 {freq = 20}
-                    else if freq > 20000 {freq = 20000}
-                }
-            }
-            var gain: Float = 0 {
-                didSet {
-                    if gain < -20 {gain = -20}
-                    else if gain > 20 {gain = 20}
-                }
-            }
-            var qValue: Float = 0.5 {
-                didSet {
-                    switch filterType {
-                    case .highPass, .lowPass:
-                        if qValue < FilterInformation.lphp_q_min {qValue = FilterInformation.lphp_q_min}
-                        else if qValue > FilterInformation.lphp_q_max {qValue = FilterInformation.lphp_q_max}
-                        
-                    case .highShelf, .lowShelf:
-                        if qValue < FilterInformation.shelf_q_min {qValue = FilterInformation.shelf_q_min}
-                        else if qValue > FilterInformation.shelf_q_max {qValue = FilterInformation.shelf_q_max}
-                        
-                    case .bell:
-                        if qValue < FilterInformation.peak_q_min {qValue = FilterInformation.peak_q_min}
-                        else if qValue > FilterInformation.peak_q_max {qValue = FilterInformation.peak_q_max}
-                    }
-                }
-            }
-        }
-        // 滤波器类型
-        enum FilterType {
-            case highPass, lowShelf, bell, highShelf, lowPass
-        }
-    }
     
     // 画频响曲线的 view
     class ResponseView: UIView {
@@ -947,7 +756,7 @@ class LYEqualizerViewController: UIViewController {
         }
         override func draw(_ rect: CGRect) {
             if let context = UIGraphicsGetCurrentContext() {
-                context.setStrokeColor(UIColor.red.cgColor)
+                context.setStrokeColor(UIColor(red: 250.0/255, green: 180.0/255, blue: 183.0/255, alpha: 1).cgColor)
                 context.setLineCap(.round)
                 context.setLineWidth(2.0)
                 context.addLines(between: points)
@@ -956,85 +765,7 @@ class LYEqualizerViewController: UIViewController {
         }
     }
     
-    // 计算频响曲线的类
-    class EP_Response: NSObject {
-        private var pointNumber: Int!
-        private var fft_len: Int!
-        private var nOfSetup: Int!
-        private var dftSetup: vDSP_DFT_Setup!
-        private var zeroArray: [Float]!
-        private var b_in: [Float]!
-        private var a_in: [Float]!
-        private var b_out_r: [Float] = []
-        private var b_out_i: [Float] = []
-        private var a_out_r: [Float] = []
-        private var a_out_i: [Float] = []
-        private var dftResult: [Float] = []
-        private var tempFloat: Float = 0
-        private var freqPoints: [Float] = []
-        
-        init(pointNumber: Int) {
-            self.pointNumber = pointNumber
-            self.fft_len = 2 * pointNumber
-            self.nOfSetup = 2 * self.fft_len
-            dftSetup = vDSP_DFT_zrop_CreateSetup(nil, UInt(nOfSetup), vDSP_DFT_Direction.FORWARD)
-            
-            zeroArray = [Float].init(repeating: 0, count: fft_len)
-            dftResult = [Float].init(repeating: 0, count: pointNumber)
-            let halfFs = LYEqualizerViewController.Fs / 2
-            let freqStride = stride(from: Float(0), to: Float(halfFs), by: Float(halfFs)/Float(pointNumber))
-            freqPoints = Array.init(freqStride)
-            b_in = [Float].init(repeating: 0, count: fft_len)
-            a_in = [Float].init(repeating: 0, count: fft_len)
-            b_out_r = [Float].init(repeating: 0, count: fft_len)
-            b_out_i = [Float].init(repeating: 0, count: fft_len)
-            a_out_r = [Float].init(repeating: 0, count: fft_len)
-            a_out_i = [Float].init(repeating: 0, count: fft_len)
-        }
-        
-        /**
-         返回：([频率(Hz)], [增益(db)])
-         */
-        func freqz(b: [Float], a: [Float]) throws -> ([Float], [Float]) {
-            
-            for i in 0 ..< fft_len {
-                b_in[i] = 0
-                a_in[i] = 0
-                b_out_r[i] = 0
-                b_out_i[i] = 0
-                a_out_r[i] = 0
-                a_out_i[i] = 0
-            }
-            
-            if b.count != a.count {
-                throw EP_Error.numbersOfTwoInputsNotEqual
-            }
-            
-            var j = 0
-            for i in 0 ..< b.count {
-                j = i % fft_len
-                a_in[j] += a[j]
-                b_in[j] += b[j]
-            }
-            
-            vDSP_DFT_Execute(dftSetup, a_in, zeroArray, &a_out_r, &a_out_i)
-            vDSP_DFT_Execute(dftSetup, b_in, zeroArray, &b_out_r, &b_out_i)
-            
-            // unpack the result
-            a_out_i[0] = 0
-            b_out_i[0] = 0
-            
-            
-            
-            for i in 0 ..< pointNumber {
-                tempFloat = sqrt((b_out_r[i] * b_out_r[i] + b_out_i[i] * b_out_i[i])/(a_out_r[i] * a_out_r[i] + a_out_i[i] * a_out_i[i]))
-                
-                dftResult[i] = 20 * log10((tempFloat * 1000).rounded(.down) / 1000.0)
-            }
-            
-            return (freqPoints, dftResult)
-        }
-    }
+    
     
     
 }

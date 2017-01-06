@@ -52,6 +52,8 @@
 		74FE8F551DCB13490094D35F /* LEBackgroundVIew.m in Sources */ = {isa = PBXBuildFile; fileRef = 74FE8F521DCB13490094D35F /* LEBackgroundVIew.m */; };
 		74FE8F561DCB13490094D35F /* LERoundImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 74FE8F541DCB13490094D35F /* LERoundImageView.m */; };
 		E9D57CE01E0BC62500844CE3 /* LYEqualizerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D57CDE1E0BC62500844CE3 /* LYEqualizerViewController.swift */; };
+		E9F350C41E15F5C10014C53D /* EP_Response.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9F350C31E15F5C10014C53D /* EP_Response.swift */; };
+		E9FFF4FD1E15F75D00A4B62F /* BandInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9FFF4FC1E15F75D00A4B62F /* BandInformation.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -148,6 +150,8 @@
 		74FE8F531DCB13490094D35F /* LERoundImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LERoundImageView.h; sourceTree = "<group>"; };
 		74FE8F541DCB13490094D35F /* LERoundImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LERoundImageView.m; sourceTree = "<group>"; };
 		E9D57CDE1E0BC62500844CE3 /* LYEqualizerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LYEqualizerViewController.swift; sourceTree = "<group>"; };
+		E9F350C31E15F5C10014C53D /* EP_Response.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EP_Response.swift; sourceTree = "<group>"; };
+		E9FFF4FC1E15F75D00A4B62F /* BandInformation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BandInformation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -457,6 +461,8 @@
 			isa = PBXGroup;
 			children = (
 				E9D57CDE1E0BC62500844CE3 /* LYEqualizerViewController.swift */,
+				E9FFF4FC1E15F75D00A4B62F /* BandInformation.swift */,
+				E9F350C31E15F5C10014C53D /* EP_Response.swift */,
 			);
 			path = Equalizer;
 			sourceTree = "<group>";
@@ -556,6 +562,7 @@
 				7432A7491DC03D6B005CF5F5 /* MASConstraint.m in Sources */,
 				7442F4411DC9FFE700BF06A5 /* LYRevolveCompandView.m in Sources */,
 				74FCF3FC1DC98C1E00A2A3FE /* LYUdpBroadcastTool.m in Sources */,
+				E9FFF4FD1E15F75D00A4B62F /* BandInformation.swift in Sources */,
 				7432A72C1DC03D0E005CF5F5 /* LYRevolveView.m in Sources */,
 				7432A74C1DC03D6B005CF5F5 /* MASViewAttribute.m in Sources */,
 				74D9666F1DC2FC470048869D /* UIView+HMCategory.m in Sources */,
@@ -573,6 +580,7 @@
 				7442F43E1DC9F33B00BF06A5 /* LYCompandViewController.m in Sources */,
 				7432A7071DC03CCF005CF5F5 /* main.m in Sources */,
 				745FDBC11DC727F800607AA4 /* LYLitterNumberView.m in Sources */,
+				E9F350C41E15F5C10014C53D /* EP_Response.swift in Sources */,
 				741BBE011DC8A7AD00A3A3ED /* LYDiscoverViewController.m in Sources */,
 				745FDBC71DC74A2700607AA4 /* LYColorBlockView.m in Sources */,
 				74206B841DC0D36900C245D1 /* GCDSocketTools.m in Sources */,
