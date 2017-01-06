@@ -115,7 +115,6 @@ class LYEqualizerViewController: UIViewController {
     // MARK: - 频带数据初始化
     
     private func setDefaultBands() {
-        
         for _ in 0 ..< 5 {
             let band = BandInformation()
             bands.append(band)

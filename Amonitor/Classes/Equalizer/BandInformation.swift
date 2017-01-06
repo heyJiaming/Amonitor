@@ -16,6 +16,7 @@ class BandInformation: NSObject {
     var filterSelected: Int = 0 {
         didSet {
             calculateResponse()
+            
         }
     }
     // 五个滤波器

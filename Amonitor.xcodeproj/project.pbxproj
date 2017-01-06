@@ -150,6 +150,8 @@
 		74FE8F531DCB13490094D35F /* LERoundImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LERoundImageView.h; sourceTree = "<group>"; };
 		74FE8F541DCB13490094D35F /* LERoundImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LERoundImageView.m; sourceTree = "<group>"; };
 		E9D57CDE1E0BC62500844CE3 /* LYEqualizerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LYEqualizerViewController.swift; sourceTree = "<group>"; };
+		E9EAA6C41E1F773000AC2B5B /* EQCommunicationProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EQCommunicationProtocol.h; sourceTree = "<group>"; };
+		E9EAA6CD1E1F7EE100AC2B5B /* Amonitor-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Amonitor-Bridging-Header.h"; sourceTree = "<group>"; };
 		E9F350C31E15F5C10014C53D /* EP_Response.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EP_Response.swift; sourceTree = "<group>"; };
 		E9FFF4FC1E15F75D00A4B62F /* BandInformation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BandInformation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -217,6 +219,7 @@
 		7432A6F91DC03CCF005CF5F5 = {
 			isa = PBXGroup;
 			children = (
+				E9EAA6CD1E1F7EE100AC2B5B /* Amonitor-Bridging-Header.h */,
 				7432A7041DC03CCF005CF5F5 /* Amonitor */,
 				7432A7031DC03CCF005CF5F5 /* Products */,
 			);
@@ -463,6 +466,7 @@
 				E9D57CDE1E0BC62500844CE3 /* LYEqualizerViewController.swift */,
 				E9FFF4FC1E15F75D00A4B62F /* BandInformation.swift */,
 				E9F350C31E15F5C10014C53D /* EP_Response.swift */,
+				E9EAA6C41E1F773000AC2B5B /* EQCommunicationProtocol.h */,
 			);
 			path = Equalizer;
 			sourceTree = "<group>";
@@ -704,6 +708,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = leye.com.Amonitor1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Amonitor-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 			};
@@ -721,6 +726,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = leye.com.Amonitor1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Amonitor-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
